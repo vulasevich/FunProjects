@@ -22,8 +22,51 @@ namespace SFMLApp
             float gravity = 30;
             bool canJump = true;
 
-            RenderWindow window = new RenderWindow(new VideoMode(800, 600), "SFML Square");
+            Vector2f startPosition = new Vector2f(1, 2);
+
+            RenderWindow window = new RenderWindow(new VideoMode(800, 600), "Platformer");
             window.Closed += (sender, e) => window.Close();
+
+            List<Block> Blocks = new List<Block>
+{
+    new Block(0f, 0f, 1),
+    new Block(1f, 0f, 1),
+    new Block(2f, 0f, 1),
+
+    new Block(7f, 0f, 1),
+    new Block(8f, 0f, 1),
+    new Block(9f, 0f, 1),
+
+    new Block(14f, 0f, 1),
+    new Block(15f, 0f, 1),
+    new Block(15f, 1f, 1),
+    new Block(15f, 2f, 1),
+    
+    new Block(10.5f, 4.5f, 1),    
+    new Block(12f, 4f, 1),
+
+    new Block(6f, 4f, 1),
+
+    new Block(0f, 4f, 1),
+    new Block(0f, 5f, 1),
+    new Block(0f, 6f, 1),
+    
+    new Block(1f, 4f, 1),
+    new Block(2f, 4f, 1),
+    new Block(3f, 4f, 1),
+
+    new Block(2f, 7f, 1),
+    new Block(3f, 7f, 2),
+    new Block(4f, 7f, 2),
+    new Block(5f, 7f, 1),
+
+    new Block(10f, 8f, 1),
+    new Block(11f, 8f, 2),
+    new Block(12f, 8f, 2),
+    new Block(13f, 8f, 2),
+    new Block(14f, 8f, 1),
+};
+
 
             RectangleShape player = new RectangleShape(new Vector2f(35, 35))
             {
@@ -33,31 +76,21 @@ namespace SFMLApp
             };
             player.Position = new Vector2f(playerX * 50, 600 - (playerY * 50));
 
-            grid[0] = 1; grid[1] = 1; grid[2] = 1;
-            grid[6] = 1; grid[7] = 1; grid[8] = 1;
-            grid[13] = 1; grid[14] = 1; grid[30] = 1; grid[46] = 1;
-            grid[75] = 1; grid[54] = 1;
-            grid[65] = 1; grid[66] = 1; grid[67] = 1;
-            grid[98] = 1; grid[115] = 1; grid[116] = 1; grid[117] = 1;
-            grid[138] = 1; grid[139] = 1; grid[140] = 1; grid[141] = 1; grid[142] = 1;
 
-            List<RectangleShape> blocks = new List<RectangleShape>();
-            for (int y = 0; y < 12; y++)
+            List<RectangleShape> shapes = new List<RectangleShape>();
+            foreach (var block in Blocks)
             {
-                for (int x = 0; x < 16; x++)
-                {
-                    if (grid[x + y * 16] == 1)
-                    {
-                        RectangleShape block = new RectangleShape(new Vector2f(45, 45))
+                Color blockColor = new Color (246, 126, 125);
+                if (block.type == 2)
+                {blockColor = new Color (195, 14, 89);}
+                        RectangleShape shape = new RectangleShape(new Vector2f(45, 45))
                         {
-                            FillColor = new Color(246, 126, 125),
+                            FillColor = blockColor, 
                             OutlineColor = new Color(97, 25, 63),
                             OutlineThickness = 5,
-                            Position = new Vector2f(x * 50, 550 - (y * 50))
+                            Position = new Vector2f(block.positionX * 50, 550 - (block.positionY * 50))
                         };
-                        blocks.Add(block);
-                    }
-                }
+                        shapes.Add(shape);
             }
 
             while (window.IsOpen)
@@ -82,52 +115,78 @@ namespace SFMLApp
                 playerX = 1f;
                 playerY = 2;
                 }
-                foreach (var block in blocks)
+                foreach (var block in Blocks)
                 {
-                    float blockX = block.Position.X / 50;
-                    float blockY = (550 - block.Position.Y) / 50;
+                    float blockX = block.positionX;
+                    float blockY = block.positionY;
 
-                    if (Math.Abs(playerY - blockY) < 0.89f)
+                    if (block.type == 2) 
                     {
-                        if (playerX < blockX && playerX + 1 > blockX)
-                        {
-                            playerX = MathF.Min(blockX - 1, playerX);
-                        }
-                        if (playerX > blockX && playerX - 1 < blockX)
-                        {
-                            playerX = MathF.Max(blockX + 1, playerX);
+                      if (Math.Abs(playerY - blockY) < 0.98f)
+                        {  
+                            if (Math.Abs(playerX - blockX) < 0.98f)
+                            {
+                                playerX = startPosition.X;
+                                playerY = startPosition.Y;
+                            }
                         }
                     }
-
-                    if (Math.Abs(playerX - blockX) < 0.89f)
+                    else
                     {
-                        if (playerY < blockY + 1 && playerY > blockY)
+                        if (Math.Abs(playerY - blockY) < 0.99f)
                         {
-                            playerY = MathF.Max(blockY + 1, playerY); 
-                            force = 0;
-                            canJump = true;
+                            if (playerX < blockX && playerX + 1 > blockX)
+                            {
+                                playerX = MathF.Min(blockX - 1, playerX);
+                            }
+                            if (playerX > blockX && playerX - 1 < blockX)
+                            {
+                                playerX = MathF.Max(blockX + 1, playerX);
+                            }
                         }
-                        if (playerY > blockY - 1 && playerY < blockY)
-                        {
-                            playerY = MathF.Min(blockY - 1, playerY);
 
-                            force = 0;
+                        if (Math.Abs(playerX - blockX) < 0.99f)
+                        {
+                            if (playerY < blockY + 1 && playerY > blockY)
+                            {
+                                playerY = MathF.Max(blockY + 1, playerY); 
+                                force = 0;
+                                canJump = true;
+                            }
+                            if (playerY > blockY - 1 && playerY < blockY)
+                            {
+                                playerY = MathF.Min(blockY - 1, playerY);
+
+                                force = 0;
+                            }
                         }
                     }
-
                 }
                 player.Position = new Vector2f((playerX + 0.1f) * 50, 550 - ((playerY - 0.1f) * 50));
 
                 window.Clear(new Color(151, 59, 97));
 
-                foreach (var block in blocks)
+                foreach (var shape in shapes)
                 {
-                    window.Draw(block);
+                    window.Draw(shape);
                 }
 
                 window.Draw(player);
                 window.Display();
             }
+        }
+    }
+    class Block
+    {
+        public float positionX;
+        public float positionY;     
+        public byte type;
+
+        public Block(float x, float y, byte thisType)
+        {
+            positionX = x;
+            positionY = y;
+            type = thisType;
         }
     }
 }
